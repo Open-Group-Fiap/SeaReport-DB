@@ -1,221 +1,221 @@
 -- insert error log
-CREATE OR REPLACE PROCEDURE create_error_log (
-    p_procedure_name t_op_sr_error_log.procedure_name%TYPE,
-    p_error_code     t_op_sr_error_log.error_code%TYPE,
-    p_error_message  t_op_sr_error_log.error_message%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_ERROR_LOG (
+    P_PROCEDURE_NAME T_OP_SR_ERROR_LOG.PROCEDURE_NAME%TYPE,
+    P_ERROR_CODE     T_OP_SR_ERROR_LOG.ERROR_CODE%TYPE,
+    P_ERROR_MESSAGE  T_OP_SR_ERROR_LOG.ERROR_MESSAGE%TYPE
 ) IS
 BEGIN
-    INSERT INTO t_op_sr_error_log (
-        procedure_name,
-        user_name,
-        error_date,
-        error_code,
-        error_message
+    INSERT INTO T_OP_SR_ERROR_LOG (
+        PROCEDURE_NAME,
+        USER_NAME,
+        ERROR_DATE,
+        ERROR_CODE,
+        ERROR_MESSAGE
     ) VALUES (
-        p_procedure_name,
-        user,
-        sysdate,
-        p_error_code,
-        p_error_message
+        P_PROCEDURE_NAME,
+        USER,
+        SYSDATE,
+        P_ERROR_CODE,
+        P_ERROR_MESSAGE
     );
 
     COMMIT;
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        raise_application_error(-20001, 'Erro ao cadastrar log: ' || sqlerrm);
-END create_error_log;
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao cadastrar log: ' || SQLERRM);
+END CREATE_ERROR_LOG;
 
 -- insert user
-CREATE OR REPLACE PROCEDURE create_user (
-    p_user_name    t_op_sr_user.user_name%TYPE,
-    p_phone_number t_op_sr_user.phone_number%TYPE,
-    p_xp           t_op_sr_user.xp%TYPE,
-    p_id_auth      t_op_sr_user.id_auth%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_USER (
+    P_USER_NAME    T_OP_SR_USER.USER_NAME%TYPE,
+    P_PHONE_NUMBER T_OP_SR_USER.PHONE_NUMBER%TYPE,
+    P_XP           T_OP_SR_USER.XP%TYPE,
+    P_ID_AUTH      T_OP_SR_USER.ID_AUTH%TYPE
 ) IS
-    parent_key_not_found EXCEPTION;
-    PRAGMA exception_init ( parent_key_not_found, -02291 );
+    PARENT_KEY_NOT_FOUND EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( PARENT_KEY_NOT_FOUND, -02291 );
 BEGIN
-    INSERT INTO t_op_sr_user (
-        user_name,
-        phone_number,
-        xp,
-        id_auth
+    INSERT INTO T_OP_SR_USER (
+        USER_NAME,
+        PHONE_NUMBER,
+        XP,
+        ID_AUTH
     ) VALUES (
-        p_user_name,
-        p_phone_number,
-        p_xp,
-        p_id_auth
+        P_USER_NAME,
+        P_PHONE_NUMBER,
+        P_XP,
+        P_ID_AUTH
     );
 
     COMMIT;
 EXCEPTION
-    WHEN value_error THEN
+    WHEN VALUE_ERROR THEN
         ROLLBACK;
-        create_error_log('create_user', sqlcode, sqlerrm);
-        raise_application_error(-20001, 'Erro ao criar user: Tipo de atributo inv?lido');
-    WHEN parent_key_not_found THEN
+        CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar user: Tipo de atributo inv?lido');
+    WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
-        create_error_log('create_user', sqlcode, sqlerrm);
-        raise_application_error(-20002, 'Erro ao criar user: Chave estrangeira n?o existe');
+        CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar user: Chave estrangeira n?o existe');
     WHEN OTHERS THEN
         ROLLBACK;
-        create_error_log('create_user', sqlcode, sqlerrm);
-        raise_application_error(-20003, 'Erro ao criar user: ' || sqlerrm);
-END create_user;
+        CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar user: ' || SQLERRM);
+END CREATE_USER;
 
 -- validate email
-CREATE OR REPLACE FUNCTION is_valid_email (
-    email IN VARCHAR2
+CREATE OR REPLACE FUNCTION IS_VALID_EMAIL (
+    EMAIL IN VARCHAR2
 ) RETURN BOOLEAN IS
-    regex_email VARCHAR2(255) := '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-    resposta    BOOLEAN := regexp_like(email, regex_email);
+    REGEX_EMAIL VARCHAR2(255) := '^[a-zA-Z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
+    RESPOSTA    BOOLEAN := REGEXP_LIKE(EMAIL, REGEX_EMAIL);
 BEGIN
-    RETURN resposta;
-END is_valid_email;
+    RETURN RESPOSTA;
+END IS_VALID_EMAIL;
 
 -- insert auth
-CREATE OR REPLACE PROCEDURE create_auth (
-    p_id_auth t_op_sr_user.user_name%TYPE,
-    p_email   t_op_sr_user.phone_number%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_AUTH (
+    P_ID_AUTH T_OP_SR_USER.USER_NAME%TYPE,
+    P_EMAIL   T_OP_SR_USER.PHONE_NUMBER%TYPE
 ) IS
-    email_invalid EXCEPTION;
-    PRAGMA exception_init ( email_invalid, -20010 );
+    EMAIL_INVALID EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( EMAIL_INVALID, -20010 );
 BEGIN
-    IF NOT is_valid_email(p_email) THEN
-        raise_application_error(-20010, 'Erro na valida??o do email: formato inv?lido');
+    IF NOT IS_VALID_EMAIL(P_EMAIL) THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Erro na valida??o do email: formato inv?lido');
     END IF;
-    INSERT INTO t_op_sr_auth (
-        id_auth,
-        email
+    INSERT INTO T_OP_SR_AUTH (
+        ID_AUTH,
+        EMAIL
     ) VALUES (
-        p_id_auth,
-        p_email
+        P_ID_AUTH,
+        P_EMAIL
     );
 
     COMMIT;
 EXCEPTION
-    WHEN value_error THEN
+    WHEN VALUE_ERROR THEN
         ROLLBACK;
-        create_error_log('create_auth', sqlcode, sqlerrm);
-        raise_application_error(-20001, 'Erro ao criar auth: Tipo de atributo inv?lido');
-    WHEN email_invalid THEN
+        CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar auth: Tipo de atributo inv?lido');
+    WHEN EMAIL_INVALID THEN
         ROLLBACK;
-        create_error_log('create_auth', sqlcode, sqlerrm);
-        raise_application_error(-20002, 'Erro ao criar auth: Email inv?lido');
+        CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar auth: Email inv?lido');
     WHEN OTHERS THEN
         ROLLBACK;
-        create_error_log('create_auth', sqlcode, sqlerrm);
-        raise_application_error(-20003, 'Erro ao criar auth: ' || sqlerrm);
-END create_auth;
+        CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar auth: ' || SQLERRM);
+END CREATE_AUTH;
 
 --insert likes
-CREATE OR REPLACE PROCEDURE create_likes (
-    p_id_post t_op_sr_likes.id_post%TYPE,
-    p_id_user t_op_sr_likes.id_user%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_LIKES (
+    P_ID_POST T_OP_SR_LIKES.ID_POST%TYPE,
+    P_ID_USER T_OP_SR_LIKES.ID_USER%TYPE
 ) IS
-    parent_key_not_found EXCEPTION;
-    PRAGMA exception_init ( parent_key_not_found, -02291 );
+    PARENT_KEY_NOT_FOUND EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( PARENT_KEY_NOT_FOUND, -02291 );
 BEGIN
-    INSERT INTO t_op_sr_likes (
-        id_post,
-        id_user
+    INSERT INTO T_OP_SR_LIKES (
+        ID_POST,
+        ID_USER
     ) VALUES (
-        p_id_user,
-        p_id_post
+        P_ID_USER,
+        P_ID_POST
     );
 
     COMMIT;
 EXCEPTION
-    WHEN value_error THEN
+    WHEN VALUE_ERROR THEN
         ROLLBACK;
-        create_error_log('create_likes', sqlcode, sqlerrm);
-        raise_application_error(-20001, 'Erro ao criar likes: Tipo de atributo inv?lido');
-    WHEN parent_key_not_found THEN
+        CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar likes: Tipo de atributo inv?lido');
+    WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
-        create_error_log('create_likes', sqlcode, sqlerrm);
-        raise_application_error(-20002, 'Erro ao criar likes: Chave estrangeira n?o existe');
+        CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar likes: Chave estrangeira n?o existe');
     WHEN OTHERS THEN
         ROLLBACK;
-        create_error_log('create_likes', sqlcode, sqlerrm);
-        raise_application_error(-20003, 'Erro ao criar likes: ' || sqlerrm);
-END create_likes;
+        CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar likes: ' || SQLERRM);
+END CREATE_LIKES;
 
 --insert report
-CREATE OR REPLACE PROCEDURE create_report (
-    p_desc_report t_op_sr_report.desc_report%TYPE,
-    p_lat         t_op_sr_report.lat%TYPE,
-    p_lon         t_op_sr_report.lon%TYPE,
-    p_date_report t_op_sr_report.date_report%TYPE,
-    p_approved    t_op_sr_report.approved%TYPE,
-    p_id_user     t_op_sr_report.id_user%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_REPORT (
+    P_DESC_REPORT T_OP_SR_REPORT.DESC_REPORT%TYPE,
+    P_LAT         T_OP_SR_REPORT.LAT%TYPE,
+    P_LON         T_OP_SR_REPORT.LON%TYPE,
+    P_DATE_REPORT T_OP_SR_REPORT.DATE_REPORT%TYPE,
+    P_APPROVED    T_OP_SR_REPORT.APPROVED%TYPE,
+    P_ID_USER     T_OP_SR_REPORT.ID_USER%TYPE
 ) IS
-    parent_key_not_found EXCEPTION;
-    PRAGMA exception_init ( parent_key_not_found, -02291 );
+    PARENT_KEY_NOT_FOUND EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( PARENT_KEY_NOT_FOUND, -02291 );
 BEGIN
-    INSERT INTO t_op_sr_report (
-        desc_report,
-        lat,
-        lon,
-        date_report,
-        approved,
-        id_user
+    INSERT INTO T_OP_SR_REPORT (
+        DESC_REPORT,
+        LAT,
+        LON,
+        DATE_REPORT,
+        APPROVED,
+        ID_USER
     ) VALUES (
-        p_desc_report,
-        p_lat,
-        p_lon,
-        p_date_report,
-        p_approved,
-        p_id_user
+        P_DESC_REPORT,
+        P_LAT,
+        P_LON,
+        P_DATE_REPORT,
+        P_APPROVED,
+        P_ID_USER
     );
 
     COMMIT;
 EXCEPTION
-    WHEN value_error THEN
+    WHEN VALUE_ERROR THEN
         ROLLBACK;
-        create_error_log('create_report', sqlcode, sqlerrm);
-        raise_application_error(-20001, 'Erro ao criar relat?rio: Tipo de atributo inv?lido');
-    WHEN parent_key_not_found THEN
+        CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar relat?rio: Tipo de atributo inv?lido');
+    WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
-        create_error_log('create_report', sqlcode, sqlerrm);
-        raise_application_error(-20002, 'Erro ao criar relat?rio: Chave estrangeira n?o existe');
+        CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar relat?rio: Chave estrangeira n?o existe');
     WHEN OTHERS THEN
         ROLLBACK;
-        create_error_log('create_report', sqlcode, sqlerrm);
-        raise_application_error(-20003, 'Erro ao criar relat?rio: ' || sqlerrm);
-END create_report;
+        CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar relat?rio: ' || SQLERRM);
+END CREATE_REPORT;
 
 --insert post
-CREATE OR REPLACE PROCEDURE create_post (
-    p_content_post t_op_sr_post.content_post%TYPE,
-    p_date_post    t_op_sr_post.date_post%TYPE
+CREATE OR REPLACE PROCEDURE CREATE_POST (
+    P_CONTENT_POST T_OP_SR_POST.CONTENT_POST%TYPE,
+    P_DATE_POST    T_OP_SR_POST.DATE_POST%TYPE
 ) IS
-    null_exception EXCEPTION;
-    PRAGMA exception_init ( null_exception, -01400 );
+    NULL_EXCEPTION EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( NULL_EXCEPTION, -01400 );
 BEGIN
-    INSERT INTO t_op_sr_post (
-        content_post,
-        date_post
+    INSERT INTO T_OP_SR_POST (
+        CONTENT_POST,
+        DATE_POST
     ) VALUES (
-        p_content_post,
-        p_date_post
+        P_CONTENT_POST,
+        P_DATE_POST
     );
 
     COMMIT;
 EXCEPTION
-    WHEN value_error THEN
+    WHEN VALUE_ERROR THEN
         ROLLBACK;
-        create_error_log('create_post', sqlcode, sqlerrm);
-        raise_application_error(-20001, 'Erro ao criar postagem: Tipo de atributo inv?lido');
-    WHEN null_exception THEN
+        CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar postagem: Tipo de atributo inv?lido');
+    WHEN NULL_EXCEPTION THEN
         ROLLBACK;
-        create_error_log('create_post', sqlcode, sqlerrm);
-        raise_application_error(-20002, 'Erro ao criar postagem: N?o pode ser nulo');
+        CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar postagem: N?o pode ser nulo');
     WHEN OTHERS THEN
         ROLLBACK;
-        create_error_log('create_post', sqlcode, sqlerrm);
-        raise_application_error(-20003, 'Erro ao criar postagem: ' || sqlerrm);
-END create_post;
+        CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar postagem: ' || SQLERRM);
+END CREATE_POST;
 
 EXEC CREATE_AUTH('dgaiwd717949412418', 'Leo@email.com');
 EXEC CREATE_USER('Leonardo Guerra', '11 9831983', 10, 'dgaiwd71794918');
@@ -226,4 +226,4 @@ EXEC CREATE_LIKES(7,1);
 SELECT
     *
 FROM
-    t_op_sr_error_log;
+    T_OP_SR_ERROR_LOG;
