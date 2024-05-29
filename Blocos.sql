@@ -63,4 +63,8 @@ BEGIN
     CLOSE PROD_CURSOR;
 END;
 
-select DISTINCT count(likes.id_post) qtdLikes, post.content_post from T_OP_SR_POST post inner join T_OP_SR_LIKES likes on post.id_post = likes.id_post order by count(likes.id_post) desc;
+SELECT COUNT(DISTINCT likes.id_post) AS qtdLikes, post.content_post
+FROM T_OP_SR_POST post
+INNER JOIN T_OP_SR_LIKES likes ON post.id_post = likes.id_post
+GROUP BY post.id_post, post.content_post
+ORDER BY qtdLikes DESC;
