@@ -1,81 +1,118 @@
-set serveroutput on;
+SET SERVEROUTPUT ON;
 
 DECLARE
-    CURSOR prod_cursor is
-        select DESC_REPORT,  APPROVED from T_OP_SR_REPORT where APPROVED = 'T';
-    rowp prod_cursor%rowtype;
-    rows_found number := 0;
+    CURSOR PROD_CURSOR IS
+        SELECT DESC_REPORT,  APPROVED FROM T_OP_SR_REPORT WHERE APPROVED = 'T';
+    ROWP PROD_CURSOR%ROWTYPE;
+    ROWS_FOUND NUMBER := 0;
 BEGIN
-    OPEN prod_cursor();
-    dbms_output.put_line('Aprovados:');
+    OPEN PROD_CURSOR();
+    DBMS_OUTPUT.PUT_LINE('Aprovados:');
     LOOP
-        FETCH prod_cursor into rowp;
-        exit when prod_cursor%notfound;
-        rows_found := rows_found + 1;
-        dbms_output.put_line(rows_found || ' - Descrição: ' || rowp.DESC_REPORT);
+        FETCH PROD_CURSOR INTO ROWP;
+        EXIT WHEN PROD_CURSOR%NOTFOUND;
+        ROWS_FOUND := ROWS_FOUND + 1;
+        DBMS_OUTPUT.PUT_LINE(ROWS_FOUND || ' - Descrição: ' || ROWP.DESC_REPORT);
         
     END LOOP;
-    if rows_found = 0 then
-        dbms_output.put_line('Nenhum aprovado');
-    end if;
-    CLOSE PROD_CURSOR;
-END;
-
-DECLARE
-    CURSOR prod_cursor is
-        select USER_NAME, XP from T_OP_SR_USER WHERE XP > 0 ORDER BY XP DESC;
-    rowp prod_cursor%rowtype;
-    rows_found number := 0;
-BEGIN
-    OPEN prod_cursor();
-    dbms_output.put_line('RANK DOS MAIORES NÍVEIS:');
-    LOOP
-        FETCH prod_cursor into rowp;
-        exit when prod_cursor%notfound;
-        rows_found := rows_found + 1;
-        dbms_output.put_line(rows_found || ' - NOME: ' || rowp.USER_NAME || ' - XP: ' || rowp.XP);
-        
-    END LOOP;
-    if rows_found = 0 then
-        dbms_output.put_line('Nenhum usuario com xp maior que 0');
-    end if;
-    CLOSE PROD_CURSOR;
-END;
-
-
-DECLARE
-    CURSOR prod_cursor IS
-    SELECT DISTINCT
-        COUNT(likes.id_post) AS qtdlikes,
-        post.content_post
-    FROM
-             t_op_sr_post post
-        INNER JOIN t_op_sr_likes likes ON post.id_post = likes.id_post
-    GROUP BY
-        post.id_post,
-        post.content_post
-    ORDER BY
-        qtdlikes DESC;
-
-    rowp       prod_cursor%rowtype;
-    rows_found NUMBER := 0;
-BEGIN
-    OPEN prod_cursor();
-    dbms_output.put_line('RANK DOS MAIORES NÍVEIS:');
-    LOOP
-        FETCH prod_cursor INTO rowp;
-        EXIT WHEN prod_cursor%notfound;
-        rows_found := rows_found + 1;
-        dbms_output.put_line(rows_found
-                             || ' - CONTEUDO: '
-                             || rowp.content_post
-                             || ' - LIKES: '
-                             || rowp.qtdlikes);
-
-    END LOOP;
-
-    IF rows_found = 0 THEN
-        dbms_output.put_line('Nenhum usuario com xp maior que 0');
+    IF ROWS_FOUND = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Nenhum aprovado');
     END IF;
-    CLOSE prod_cursor;
+    CLOSE PROD_CURSOR;
+END;
+
+DECLARE
+    CURSOR PROD_CURSOR IS
+        SELECT USER_NAME, XP FROM T_OP_SR_USER WHERE XP > 0 ORDER BY XP DESC;
+    ROWP PROD_CURSOR%ROWTYPE;
+    ROWS_FOUND NUMBER := 0;
+BEGIN
+    OPEN PROD_CURSOR();
+    DBMS_OUTPUT.PUT_LINE('RANK DOS MAIORES NÍVEIS:');
+    LOOP
+        FETCH PROD_CURSOR INTO ROWP;
+        EXIT WHEN PROD_CURSOR%NOTFOUND;
+        ROWS_FOUND := ROWS_FOUND + 1;
+        DBMS_OUTPUT.PUT_LINE(ROWS_FOUND || ' - NOME: ' || ROWP.USER_NAME || ' - XP: ' || ROWP.XP);
+        
+    END LOOP;
+    IF ROWS_FOUND = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Nenhum usuario com xp maior que 0');
+    END IF;
+    CLOSE PROD_CURSOR;
+END;
+
+
+DECLARE
+    CURSOR PROD_CURSOR IS
+    SELECT DISTINCT
+        COUNT(LIKES.ID_POST) AS QTDLIKES,
+        POST.CONTENT_POST
+    FROM
+             T_OP_SR_POST POST
+        INNER JOIN T_OP_SR_LIKES LIKES ON POST.ID_POST = LIKES.ID_POST
+    GROUP BY
+        POST.ID_POST,
+        POST.CONTENT_POST
+    ORDER BY
+        QTDLIKES DESC;
+
+    ROWP       PROD_CURSOR%ROWTYPE;
+    ROWS_FOUND NUMBER := 0;
+BEGIN
+    OPEN PROD_CURSOR();
+    DBMS_OUTPUT.PUT_LINE('RANK DOS MAIORES NÍVEIS:');
+    LOOP
+        FETCH PROD_CURSOR INTO ROWP;
+        EXIT WHEN PROD_CURSOR%NOTFOUND;
+        ROWS_FOUND := ROWS_FOUND + 1;
+        DBMS_OUTPUT.PUT_LINE(ROWS_FOUND
+                             || ' - CONTEUDO: '
+                             || ROWP.CONTENT_POST
+                             || ' - LIKES: '
+                             || ROWP.QTDLIKES);
+
+    END LOOP;
+
+    IF ROWS_FOUND = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Nenhum usuario com xp maior que 0');
+    END IF;
+    CLOSE PROD_CURSOR;
+END;
+
+DECLARE
+    CURSOR PROD_CURSOR IS
+    SELECT DISTINCT
+        COUNT(LIKES.ID_USER) AS QTDLIKES,
+        USUARIO.USER_NAME
+    FROM
+             T_OP_SR_USER USUARIO
+        INNER JOIN T_OP_SR_LIKES LIKES ON USUARIO.ID_USER = LIKES.ID_USER
+    GROUP BY
+        USUARIO.ID_USER,
+        USUARIO.USER_NAME
+    ORDER BY
+        QTDLIKES DESC;
+
+    ROWP       PROD_CURSOR%ROWTYPE;
+    ROWS_FOUND NUMBER := 0;
+BEGIN
+    OPEN PROD_CURSOR();
+    DBMS_OUTPUT.PUT_LINE('RANK DOS MAIORES NÍVEIS:');
+    LOOP
+        FETCH PROD_CURSOR INTO ROWP;
+        EXIT WHEN PROD_CURSOR%NOTFOUND;
+        ROWS_FOUND := ROWS_FOUND + 1;
+        DBMS_OUTPUT.PUT_LINE(ROWS_FOUND
+                             || ' - Usuario: '
+                             || ROWP.USER_NAME
+                             || ' - LIKES: '
+                             || ROWP.QTDLIKES);
+
+    END LOOP;
+
+    IF ROWS_FOUND = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Nenhum usuario com xp maior que 0');
+    END IF;
+    CLOSE PROD_CURSOR;
 END;
