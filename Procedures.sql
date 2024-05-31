@@ -53,11 +53,11 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar user: Tipo de atributo inv?lido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar user: Tipo de atributo invalido');
     WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar user: Chave estrangeira n?o existe');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar user: Chave estrangeira nao existe');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_user', SQLCODE, SQLERRM);
@@ -83,7 +83,7 @@ CREATE OR REPLACE PROCEDURE CREATE_AUTH (
     PRAGMA EXCEPTION_INIT ( EMAIL_INVALID, -20010 );
 BEGIN
     IF NOT IS_VALID_EMAIL(P_EMAIL) THEN
-        RAISE_APPLICATION_ERROR(-20010, 'Erro na valida??o do email: formato inv?lido');
+        RAISE_APPLICATION_ERROR(-20010, 'Erro na validacao do email: formato invalido');
     END IF;
     INSERT INTO T_OP_SR_AUTH (
         ID_AUTH,
@@ -98,11 +98,11 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar auth: Tipo de atributo inv?lido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar auth: Tipo de atributo invalido');
     WHEN EMAIL_INVALID THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar auth: Email inv?lido');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar auth: Email invalido');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_auth', SQLCODE, SQLERRM);
@@ -130,11 +130,11 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar likes: Tipo de atributo inv?lido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar likes: Tipo de atributo invalido');
     WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar likes: Chave estrangeira n?o existe');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar likes: Chave estrangeira nao existe');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_likes', SQLCODE, SQLERRM);
@@ -174,15 +174,15 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar relat?rio: Tipo de atributo inv?lido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar relatario: Tipo de atributo invalido');
     WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar relat?rio: Chave estrangeira n?o existe');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar relatario: Chave estrangeira nao existe');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar relat?rio: ' || SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar relatario: ' || SQLERRM);
 END CREATE_REPORT;
 
 --insert post
@@ -206,24 +206,13 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar postagem: Tipo de atributo inv?lido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar postagem: Tipo de atributo invalido');
     WHEN NULL_EXCEPTION THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar postagem: N?o pode ser nulo');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar postagem: Nao pode ser nulo');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
         RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar postagem: ' || SQLERRM);
 END CREATE_POST;
-
-EXEC CREATE_AUTH('dgaiwd717949412418', 'Leo@email.com');
-EXEC CREATE_USER('Leonardo Guerra', '11 9831983', 10, 'dgaiwd71794918');
-EXEC CREATE_REPORT('Descri??o', 90.918731, 101.123456, SYSDATE, 'F', 7);
-EXEC CREATE_POST('', SYSDATE);
-EXEC CREATE_LIKES(7,1);
-
-SELECT
-    *
-FROM
-    T_OP_SR_ERROR_LOG;
