@@ -64,6 +64,8 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar user: ' || SQLERRM);
 END CREATE_USER;
 
+
+
 -- validate email
 CREATE OR REPLACE FUNCTION IS_VALID_EMAIL (
     EMAIL IN VARCHAR2
@@ -73,6 +75,8 @@ CREATE OR REPLACE FUNCTION IS_VALID_EMAIL (
 BEGIN
     RETURN RESPOSTA;
 END IS_VALID_EMAIL;
+
+
 
 -- insert auth
 CREATE OR REPLACE PROCEDURE CREATE_AUTH (
@@ -141,32 +145,82 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar likes: ' || SQLERRM);
 END CREATE_LIKES;
 
+
+
+-- Funcao que valida se eh um lat ou lon valido
+CREATE OR REPLACE FUNCTION LAT_LON_ISVALID (
+    LAT IN DECIMAL,
+	LON IN DECIMAL
+) RETURN BOOLEAN IS
+    RESPOSTA BOOLEAN := (LAT > -91 AND LAT < 91) AND (LON > -181 AND LON < 181);
+BEGIN
+    RETURN RESPOSTA;
+END LAT_LON_ISVALID;
+
+
+
+
+--insert location
+CREATE OR REPLACE PROCEDURE CREATE_LOCATION (
+    P_LAT         T_OP_SR_LOCATION.LAT%TYPE,
+    P_LON         T_OP_SR_LOCATION.LON%TYPE
+) IS
+     LAT_LON_INVALID EXCEPTION;
+    PRAGMA EXCEPTION_INIT ( LAT_LON_INVALID, -20011 );
+BEGIN
+	IF NOT LAT_LON_ISVALID(P_LAT, P_LON) THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Erro na validacao da lat ou lon: formato invalido');
+    END IF;
+    INSERT INTO T_OP_SR_LOCATION (
+        LAT,
+        LON
+    ) VALUES (
+        P_LAT,
+        P_LON
+    );
+
+    COMMIT;
+EXCEPTION
+    WHEN VALUE_ERROR THEN
+        ROLLBACK;
+        CREATE_ERROR_LOG('create_location', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar location: Tipo de atributo invalido');
+    WHEN LAT_LON_INVALID THEN
+        ROLLBACK;
+        CREATE_ERROR_LOG('create_location', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar location: LAT ou LON invalido');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        CREATE_ERROR_LOG('create_location', SQLCODE, SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar location: ' || SQLERRM);
+END CREATE_LOCATION;
+
 --insert report
 CREATE OR REPLACE PROCEDURE CREATE_REPORT (
     P_DESC_REPORT T_OP_SR_REPORT.DESC_REPORT%TYPE,
-    P_LAT         T_OP_SR_REPORT.LAT%TYPE,
-    P_LON         T_OP_SR_REPORT.LON%TYPE,
     P_DATE_REPORT T_OP_SR_REPORT.DATE_REPORT%TYPE,
     P_APPROVED    T_OP_SR_REPORT.APPROVED%TYPE,
-    P_ID_USER     T_OP_SR_REPORT.ID_USER%TYPE
+    P_CATEGORY    T_OP_SR_REPORT.CATEGORY%TYPE,
+    P_ID_USER     T_OP_SR_REPORT.ID_USER%TYPE,
+    P_ID_LOCATION T_OP_SR_REPORT.ID_LOCATION%TYPE
 ) IS
     PARENT_KEY_NOT_FOUND EXCEPTION;
     PRAGMA EXCEPTION_INIT ( PARENT_KEY_NOT_FOUND, -02291 );
 BEGIN
     INSERT INTO T_OP_SR_REPORT (
         DESC_REPORT,
-        LAT,
-        LON,
         DATE_REPORT,
         APPROVED,
-        ID_USER
+        "CATEGORY",
+        ID_USER,
+        ID_LOCATION
     ) VALUES (
         P_DESC_REPORT,
-        P_LAT,
-        P_LON,
         P_DATE_REPORT,
         P_APPROVED,
-        P_ID_USER
+        P_CATEGORY,
+        P_ID_USER,
+        p_ID_LOCATION
     );
 
     COMMIT;
@@ -174,16 +228,17 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar relatario: Tipo de atributo invalido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar report: Tipo de atributo invalido');
     WHEN PARENT_KEY_NOT_FOUND THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar relatario: Chave estrangeira nao existe');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar report: Chave estrangeira nao existe');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_report', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar relatario: ' || SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar report: ' || SQLERRM);
 END CREATE_REPORT;
+
 
 --insert post
 CREATE OR REPLACE PROCEDURE CREATE_POST (
@@ -206,13 +261,20 @@ EXCEPTION
     WHEN VALUE_ERROR THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar postagem: Tipo de atributo invalido');
+        RAISE_APPLICATION_ERROR(-20001, 'Erro ao criar post: Tipo de atributo invalido');
     WHEN NULL_EXCEPTION THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar postagem: Nao pode ser nulo');
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao criar post: Nao pode ser nulo');
     WHEN OTHERS THEN
         ROLLBACK;
         CREATE_ERROR_LOG('create_post', SQLCODE, SQLERRM);
-        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar postagem: ' || SQLERRM);
+        RAISE_APPLICATION_ERROR(-20003, 'Erro ao criar post: ' || SQLERRM);
 END CREATE_POST;
+
+EXEC CREATE_AUTH('DAHIDWIDJPAKSD811DUI2', 'leo@email.com');
+EXEC CREATE_USER('Leonardo', '11 90000000', 100, 'DAHIDWIDJPAKSD811DUI2');
+EXEC CREATE_LOCATION(41,101.32);
+EXEC CREATE_REPORT('DESC', SYSDATE, 0, 2, 1, 1);
+EXEC CREATE_POST('CONTENT', SYSDATE);
+EXEC CREATE_LIKES(1,1);
